@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>USCIS Case Viewer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>USCIS Case Viewer</h1>
+      <p id="status" class="status">Loading...</p>
+    </header>
+
+    <div id="controls">
+      <button id="refreshBtn" class="btn btn-primary">Refresh</button>
+      <button id="expandAllBtn" class="btn btn-secondary">Expand All</button>
+      <button id="collapseAllBtn" class="btn btn-secondary">Collapse All</button>
+    </div>
+
+    <div id="cases-container"></div>
+
+    <div id="empty-state" class="hidden">
+      <p>No cases found. Navigate to <strong>my.uscis.gov/account/applicant</strong> while signed in.</p>
+    </div>
+
+    <footer>
+      <p id="last-updated"></p>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
