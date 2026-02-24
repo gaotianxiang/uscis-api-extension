@@ -4,7 +4,7 @@ function extractReceiptNumbers() {
   const bodyText = document.body.innerText;
   const matches = bodyText.match(RECEIPT_REGEX);
   if (!matches) return [];
-  return [...new Set(matches)];
+  return [...new Set(matches)].sort();
 }
 
 function waitForContent(maxAttempts = 20, intervalMs = 1000) {
