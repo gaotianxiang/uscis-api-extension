@@ -226,3 +226,16 @@ function showEmptyState() {
   document.getElementById('empty-state').classList.remove('hidden');
   document.getElementById('status').textContent = 'No cases loaded';
 }
+
+if (typeof module !== 'undefined') {
+  module.exports = {
+    extractStatusSummary,
+    escapeHtml,
+    renderJsonTree,
+    createCaseCard,
+    renderCases,
+    toggleAll,
+    updateTimestamp,
+    showEmptyState,
+  };
+}
