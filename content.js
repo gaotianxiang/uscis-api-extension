@@ -59,7 +59,12 @@ const observer = new MutationObserver(() => {
   }
 });
 
-observer.observe(document.body, { childList: true, subtree: true });
+// Initialize only in browser extension context (not in tests)
+if (typeof module === 'undefined') {
+  observer.observe(document.body, { childList: true, subtree: true });
+  main();
+}
 
-// Also run immediately in case content is already loaded
-main();
+if (typeof module !== 'undefined') {
+  module.exports = { extractReceiptNumbers, waitForContent, RECEIPT_REGEX };
+}

@@ -92,3 +92,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 });
+
+if (typeof module !== 'undefined') {
+  module.exports = { fetchCaseData, fetchAllCases };
+}
