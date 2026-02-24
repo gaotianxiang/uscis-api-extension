@@ -47,11 +47,11 @@ function createCaseCard(caseResult) {
         ? `Error ${caseResult.status}`
         : escapeHtml(extractStatusSummary(caseResult.data))}
     </span>
-    <button class="toggle-btn" aria-label="Toggle details">&#x25BC;</button>
+    <button class="toggle-btn" aria-label="Toggle details">&#x25B6;</button>
   `;
 
   const body = document.createElement('div');
-  body.className = 'case-body';
+  body.className = 'case-body collapsed';
 
   if (caseResult.error) {
     body.innerHTML = `
