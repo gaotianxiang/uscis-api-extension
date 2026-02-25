@@ -1,7 +1,7 @@
 const RECEIPT_REGEX = /\b(IOE|EAC|WAC|LIN|SRC|NBC|MSC|YSC|MCT)\d{10}\b/g;
 
 function extractReceiptNumbers() {
-  const bodyText = document.body.innerText;
+  const bodyText = document.body.textContent;
   const matches = bodyText.match(RECEIPT_REGEX);
   if (!matches) return [];
   return [...new Set(matches)].sort();
@@ -53,7 +53,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // Observe DOM mutations for SPA content loading
 const observer = new MutationObserver(() => {
-  if (document.body.innerText.match(RECEIPT_REGEX)) {
+  if (document.body.textContent.match(RECEIPT_REGEX)) {
     main();
     observer.disconnect();
   }
