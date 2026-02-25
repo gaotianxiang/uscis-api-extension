@@ -1,4 +1,4 @@
-const { fetchCaseData, fetchAllCases } = require('../background');
+const { fetchCaseData, fetchAllCases, getChangedPaths, computeAllChanges } = require('../background');
 
 const API_BASE = 'https://my.uscis.gov/account/case-service/api/cases/';
 
@@ -226,5 +226,163 @@ describe('fetchAllCases', () => {
     expect(fetch).toHaveBeenCalledTimes(4);
     // All receipt numbers must appear in the call order
     receiptNumbers.forEach((rn) => expect(callOrder).toContain(rn));
+  });
+});
+
+describe('getChangedPaths', () => {
+  test('returns empty set for identical primitive values', () => {
+    expect(getChangedPaths('hello', 'hello').size).toBe(0);
+  });
+
+  test('returns empty set for identical objects', () => {
+    expect(getChangedPaths({ a: 1 }, { a: 1 }).size).toBe(0);
+  });
+
+  test('detects a changed top-level string field', () => {
+    const changed = getChangedPaths({ caseStatus: 'Pending' }, { caseStatus: 'Approved' });
+    expect(changed.has('caseStatus')).toBe(true);
+  });
+
+  test('detects a changed top-level number field', () => {
+    const changed = getChangedPaths({ count: 1 }, { count: 2 });
+    expect(changed.has('count')).toBe(true);
+  });
+
+  test('detects no change when values are equal', () => {
+    const changed = getChangedPaths({ a: 1, b: 'x' }, { a: 1, b: 'x' });
+    expect(changed.size).toBe(0);
+  });
+
+  test('detects added fields', () => {
+    const changed = getChangedPaths({ a: 1 }, { a: 1, b: 2 });
+    expect(changed.has('b')).toBe(true);
+  });
+
+  test('detects removed fields', () => {
+    const changed = getChangedPaths({ a: 1, b: 2 }, { a: 1 });
+    expect(changed.has('b')).toBe(true);
+  });
+
+  test('detects nested field changes and marks parent path too', () => {
+    const changed = getChangedPaths(
+      { actions: [{ displayText: 'Old' }] },
+      { actions: [{ displayText: 'New' }] }
+    );
+    expect(changed.has('actions.0.displayText')).toBe(true);
+    expect(changed.has('actions.0')).toBe(true);
+    expect(changed.has('actions')).toBe(true);
+  });
+
+  test('does not mark unchanged nested fields', () => {
+    const changed = getChangedPaths(
+      { a: { x: 1 }, b: 2 },
+      { a: { x: 1 }, b: 3 }
+    );
+    expect(changed.has('b')).toBe(true);
+    expect(changed.has('a')).toBe(false);
+    expect(changed.has('a.x')).toBe(false);
+  });
+
+  test('handles null vs object change', () => {
+    const changed = getChangedPaths({ a: null }, { a: { x: 1 } });
+    expect(changed.has('a')).toBe(true);
+  });
+
+  test('handles object vs null change', () => {
+    const changed = getChangedPaths({ a: { x: 1 } }, { a: null });
+    expect(changed.has('a')).toBe(true);
+  });
+
+  test('handles undefined vs value change', () => {
+    const changed = getChangedPaths({ a: undefined }, { a: 'hello' });
+    expect(changed.has('a')).toBe(true);
+  });
+
+  test('handles type change (string to number)', () => {
+    const changed = getChangedPaths({ a: '1' }, { a: 1 });
+    expect(changed.has('a')).toBe(true);
+  });
+
+  test('handles empty objects with no changes', () => {
+    expect(getChangedPaths({}, {}).size).toBe(0);
+  });
+
+  test('handles array element value change', () => {
+    const changed = getChangedPaths(['a', 'b'], ['a', 'c']);
+    expect(changed.has('1')).toBe(true);
+    expect(changed.has('0')).toBe(false);
+  });
+});
+
+describe('computeAllChanges', () => {
+  test('returns empty object when no previous results exist', () => {
+    const newResults = [
+      { receiptNumber: 'IOE1234567890', error: false, data: { caseStatus: 'Pending' } },
+    ];
+    expect(computeAllChanges([], newResults)).toEqual({});
+  });
+
+  test('returns empty object when nothing changed', () => {
+    const data = { caseStatus: 'Approved' };
+    const prev = [{ receiptNumber: 'IOE1234567890', error: false, data }];
+    const curr = [{ receiptNumber: 'IOE1234567890', error: false, data }];
+    expect(computeAllChanges(prev, curr)).toEqual({});
+  });
+
+  test('returns changed paths for a receipt number that changed', () => {
+    const prev = [
+      { receiptNumber: 'IOE1234567890', error: false, data: { caseStatus: 'Pending' } },
+    ];
+    const curr = [
+      { receiptNumber: 'IOE1234567890', error: false, data: { caseStatus: 'Approved' } },
+    ];
+    const result = computeAllChanges(prev, curr);
+    expect(result['IOE1234567890']).toContain('caseStatus');
+  });
+
+  test('skips comparison when new result has error', () => {
+    const prev = [
+      { receiptNumber: 'IOE1234567890', error: false, data: { caseStatus: 'Approved' } },
+    ];
+    const curr = [
+      { receiptNumber: 'IOE1234567890', error: true, status: 500, data: null },
+    ];
+    expect(computeAllChanges(prev, curr)).toEqual({});
+  });
+
+  test('skips comparison when previous result had error', () => {
+    const prev = [
+      { receiptNumber: 'IOE1234567890', error: true, status: 500, data: null },
+    ];
+    const curr = [
+      { receiptNumber: 'IOE1234567890', error: false, data: { caseStatus: 'Approved' } },
+    ];
+    expect(computeAllChanges(prev, curr)).toEqual({});
+  });
+
+  test('skips new receipt numbers with no prior record', () => {
+    const prev = [
+      { receiptNumber: 'IOE1111111111', error: false, data: { caseStatus: 'Approved' } },
+    ];
+    const curr = [
+      { receiptNumber: 'IOE1111111111', error: false, data: { caseStatus: 'Approved' } },
+      { receiptNumber: 'EAC2222222222', error: false, data: { caseStatus: 'Pending' } },
+    ];
+    const result = computeAllChanges(prev, curr);
+    expect(result['EAC2222222222']).toBeUndefined();
+  });
+
+  test('handles multiple changed receipt numbers', () => {
+    const prev = [
+      { receiptNumber: 'IOE1111111111', error: false, data: { caseStatus: 'Pending' } },
+      { receiptNumber: 'EAC2222222222', error: false, data: { caseStatus: 'Pending' } },
+    ];
+    const curr = [
+      { receiptNumber: 'IOE1111111111', error: false, data: { caseStatus: 'Approved' } },
+      { receiptNumber: 'EAC2222222222', error: false, data: { caseStatus: 'Denied' } },
+    ];
+    const result = computeAllChanges(prev, curr);
+    expect(result['IOE1111111111']).toContain('caseStatus');
+    expect(result['EAC2222222222']).toContain('caseStatus');
   });
 });

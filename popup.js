@@ -7,8 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function loadResults() {
-  chrome.storage.local.get(['caseResults', 'lastUpdated'], (data) => {
-    const { caseResults, lastUpdated } = data;
+  chrome.storage.local.get(['caseResults', 'lastUpdated', 'caseChanges'], (data) => {
+    const { caseResults, lastUpdated, caseChanges } = data;
 
     if (!caseResults || caseResults.length === 0) {
       showEmptyState();
@@ -17,31 +17,37 @@ function loadResults() {
 
     document.getElementById('cases-container').classList.remove('hidden');
     document.getElementById('empty-state').classList.add('hidden');
-    renderCases(caseResults);
+    renderCases(caseResults, caseChanges || {});
     updateTimestamp(lastUpdated);
     document.getElementById('status').textContent =
       `Found ${caseResults.length} case(s)`;
   });
 }
 
-function renderCases(cases) {
+function renderCases(cases, caseChanges) {
+  if (caseChanges === undefined) caseChanges = {};
   const container = document.getElementById('cases-container');
   container.innerHTML = '';
 
   cases.forEach((caseResult) => {
-    const card = createCaseCard(caseResult);
+    const changedPaths = caseChanges[caseResult.receiptNumber] || [];
+    const card = createCaseCard(caseResult, changedPaths);
     container.appendChild(card);
   });
 }
 
-function createCaseCard(caseResult) {
+function createCaseCard(caseResult, changedPaths) {
+  if (changedPaths === undefined) changedPaths = [];
+  const hasChanges = changedPaths.length > 0;
+
   const card = document.createElement('div');
-  card.className = `case-card ${caseResult.error ? 'error' : 'success'}`;
+  card.className = `case-card ${caseResult.error ? 'error' : 'success'}${hasChanges ? ' changed' : ''}`;
 
   const header = document.createElement('div');
   header.className = 'case-header';
   header.innerHTML = `
     <span class="receipt-number">${escapeHtml(caseResult.receiptNumber)}</span>
+    ${hasChanges ? '<span class="changed-badge">Updated</span>' : ''}
     <span class="case-status-badge">
       ${caseResult.error
         ? `Error ${caseResult.status}`
@@ -62,7 +68,8 @@ function createCaseCard(caseResult) {
   } else {
     const jsonTree = document.createElement('div');
     jsonTree.className = 'json-tree';
-    renderJsonTree(jsonTree, caseResult.data);
+    const changedPathsSet = new Set(changedPaths);
+    renderJsonTree(jsonTree, caseResult.data, 0, changedPathsSet, '');
     body.appendChild(jsonTree);
 
     const btnRow = document.createElement('div');
@@ -117,8 +124,10 @@ function extractStatusSummary(data) {
     || 'View Details';
 }
 
-function renderJsonTree(container, obj, depth) {
+function renderJsonTree(container, obj, depth, changedPaths, currentPath) {
   if (depth === undefined) depth = 0;
+  if (changedPaths === undefined) changedPaths = new Set();
+  if (currentPath === undefined) currentPath = '';
 
   if (obj === null || obj === undefined) {
     const span = document.createElement('span');
@@ -162,6 +171,11 @@ function renderJsonTree(container, obj, depth) {
 
   entries.forEach(([key, value]) => {
     const li = document.createElement('li');
+    const path = currentPath ? `${currentPath}.${key}` : key;
+
+    if (changedPaths.has(path)) {
+      li.classList.add('json-changed');
+    }
 
     const keySpan = document.createElement('span');
     keySpan.className = 'json-key';
@@ -171,7 +185,7 @@ function renderJsonTree(container, obj, depth) {
     li.appendChild(document.createTextNode(': '));
 
     const valueContainer = document.createElement('span');
-    renderJsonTree(valueContainer, value, depth + 1);
+    renderJsonTree(valueContainer, value, depth + 1, changedPaths, path);
     li.appendChild(valueContainer);
 
     list.appendChild(li);

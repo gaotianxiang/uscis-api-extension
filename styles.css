@@ -101,6 +101,20 @@ header h1 {
   border-left: 3px solid var(--success);
 }
 
+.case-card.changed {
+  border-left: 3px solid #f59e0b;
+}
+
+.changed-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: #fef3c7;
+  color: #92400e;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
 .case-header {
   display: flex;
   align-items: center;
@@ -196,6 +210,12 @@ header h1 {
 .json-null {
   color: #9ca3af;
   font-style: italic;
+}
+
+.json-changed {
+  background: #fef3c7;
+  border-radius: 3px;
+  padding: 0 2px;
 }
 
 /* Raw JSON */
