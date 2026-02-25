@@ -449,3 +449,148 @@ describe('showEmptyState', () => {
     expect(document.getElementById('status').textContent).toBe('No cases loaded');
   });
 });
+
+// ---------------------------------------------------------------------------
+// createCaseCard with changedPaths
+// ---------------------------------------------------------------------------
+describe('createCaseCard change indicators', () => {
+  function makeSuccess(overrides = {}) {
+    return {
+      receiptNumber: 'IOE1234567890',
+      error: false,
+      status: 200,
+      data: { caseStatus: 'Case Was Approved' },
+      ...overrides,
+    };
+  }
+
+  test('no changed-badge or changed class when changedPaths is empty', () => {
+    const card = createCaseCard(makeSuccess(), []);
+    expect(card.classList.contains('changed')).toBe(false);
+    expect(card.querySelector('.changed-badge')).toBeNull();
+  });
+
+  test('no changed-badge when changedPaths is omitted', () => {
+    const card = createCaseCard(makeSuccess());
+    expect(card.classList.contains('changed')).toBe(false);
+    expect(card.querySelector('.changed-badge')).toBeNull();
+  });
+
+  test('adds "changed" class when changedPaths is non-empty', () => {
+    const card = createCaseCard(makeSuccess(), ['caseStatus']);
+    expect(card.classList.contains('changed')).toBe(true);
+  });
+
+  test('shows "Updated" badge when changedPaths is non-empty', () => {
+    const card = createCaseCard(makeSuccess(), ['caseStatus']);
+    const badge = card.querySelector('.changed-badge');
+    expect(badge).not.toBeNull();
+    expect(badge.textContent).toBe('Updated');
+  });
+
+  test('json-changed class applied to rows with matching paths', () => {
+    const caseResult = makeSuccess({ data: { caseStatus: 'Approved', formType: 'I-485' } });
+    const card = createCaseCard(caseResult, ['caseStatus']);
+    card.querySelector('.case-body').classList.remove('collapsed');
+    const changedItems = card.querySelectorAll('.json-changed');
+    expect(changedItems.length).toBeGreaterThan(0);
+    const texts = Array.from(changedItems).map(el => el.textContent);
+    expect(texts.some(t => t.includes('caseStatus'))).toBe(true);
+  });
+
+  test('json-changed class not applied to unchanged rows', () => {
+    const caseResult = makeSuccess({ data: { caseStatus: 'Approved', formType: 'I-485' } });
+    const card = createCaseCard(caseResult, ['caseStatus']);
+    const allItems = card.querySelectorAll('.json-list li');
+    const formTypeItem = Array.from(allItems).find(li => li.textContent.includes('formType'));
+    expect(formTypeItem).toBeDefined();
+    expect(formTypeItem.classList.contains('json-changed')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderCases with caseChanges
+// ---------------------------------------------------------------------------
+describe('renderCases with caseChanges', () => {
+  beforeEach(setupPopupDom);
+
+  test('passes changedPaths to case cards when caseChanges provided', () => {
+    const cases = [
+      { receiptNumber: 'IOE1111111111', error: false, status: 200, data: { caseStatus: 'Approved' } },
+    ];
+    const caseChanges = { 'IOE1111111111': ['caseStatus'] };
+    renderCases(cases, caseChanges);
+    const card = document.querySelector('.case-card');
+    expect(card.classList.contains('changed')).toBe(true);
+    expect(card.querySelector('.changed-badge')).not.toBeNull();
+  });
+
+  test('no change indicators when caseChanges is empty', () => {
+    const cases = [
+      { receiptNumber: 'IOE1111111111', error: false, status: 200, data: { caseStatus: 'Approved' } },
+    ];
+    renderCases(cases, {});
+    const card = document.querySelector('.case-card');
+    expect(card.classList.contains('changed')).toBe(false);
+  });
+
+  test('no change indicators when caseChanges is omitted', () => {
+    const cases = [
+      { receiptNumber: 'IOE1111111111', error: false, status: 200, data: { caseStatus: 'Approved' } },
+    ];
+    renderCases(cases);
+    const card = document.querySelector('.case-card');
+    expect(card.classList.contains('changed')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderJsonTree with changedPaths
+// ---------------------------------------------------------------------------
+describe('renderJsonTree change highlighting', () => {
+  let container;
+
+  beforeEach(() => {
+    container = document.createElement('div');
+  });
+
+  test('adds json-changed class to a changed top-level key row', () => {
+    const changedPaths = new Set(['caseStatus']);
+    renderJsonTree(container, { caseStatus: 'Approved', formType: 'I-485' }, 0, changedPaths, '');
+    const changedItems = container.querySelectorAll('.json-changed');
+    expect(changedItems.length).toBe(1);
+    expect(changedItems[0].textContent).toContain('caseStatus');
+  });
+
+  test('does not add json-changed class to unchanged keys', () => {
+    const changedPaths = new Set(['caseStatus']);
+    renderJsonTree(container, { caseStatus: 'Approved', formType: 'I-485' }, 0, changedPaths, '');
+    const allItems = container.querySelectorAll('li');
+    const formTypeItem = Array.from(allItems).find(li => li.textContent.includes('formType'));
+    expect(formTypeItem.classList.contains('json-changed')).toBe(false);
+  });
+
+  test('adds json-changed to nested changed key rows', () => {
+    const changedPaths = new Set(['actions', 'actions.0', 'actions.0.displayText']);
+    renderJsonTree(
+      container,
+      { actions: [{ displayText: 'New text' }] },
+      0,
+      changedPaths,
+      ''
+    );
+    const changedItems = container.querySelectorAll('.json-changed');
+    expect(changedItems.length).toBe(3);
+  });
+
+  test('no changed items when changedPaths is empty', () => {
+    renderJsonTree(container, { caseStatus: 'Approved' }, 0, new Set(), '');
+    expect(container.querySelectorAll('.json-changed').length).toBe(0);
+  });
+
+  test('works without changedPaths parameter (backward compatible)', () => {
+    renderJsonTree(container, { caseStatus: 'Approved' });
+    expect(container.querySelectorAll('.json-changed').length).toBe(0);
+    expect(container.querySelector('.json-string')).not.toBeNull();
+  });
+});
