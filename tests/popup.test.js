@@ -391,7 +391,7 @@ describe('toggleAll', () => {
   test('expand=true sets toggle button to down arrow', () => {
     toggleAll(true);
     document.querySelectorAll('.toggle-btn').forEach((btn) => {
-      expect(btn.innerHTML).toBe('&#x25BC;');
+      expect(btn.innerHTML).toBe('▼');
     });
   });
 
@@ -399,7 +399,7 @@ describe('toggleAll', () => {
     toggleAll(true);
     toggleAll(false);
     document.querySelectorAll('.toggle-btn').forEach((btn) => {
-      expect(btn.innerHTML).toBe('&#x25B6;');
+      expect(btn.innerHTML).toBe('▶');
     });
   });
 });
