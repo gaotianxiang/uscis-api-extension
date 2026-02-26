@@ -34,12 +34,12 @@ async function main() {
   console.log('[USCIS Extension] Found receipt numbers:', receiptNumbers);
 
   chrome.runtime.sendMessage(
-    { type: 'RECEIPT_NUMBERS_FOUND', receiptNumbers },
-    (response) => {
-      if (chrome.runtime.lastError) {
-        console.error('[USCIS Extension] Error sending message:', chrome.runtime.lastError);
-      }
-    }
+      {type: 'RECEIPT_NUMBERS_FOUND', receiptNumbers},
+      (response) => {
+        if (chrome.runtime.lastError) {
+          console.error('[USCIS Extension] Error sending message:', chrome.runtime.lastError);
+        }
+      },
   );
 }
 
@@ -47,7 +47,7 @@ async function main() {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'RE_EXTRACT') {
     main();
-    sendResponse({ ok: true });
+    sendResponse({ok: true});
   }
 });
 
@@ -61,10 +61,10 @@ const observer = new MutationObserver(() => {
 
 // Initialize only in browser extension context (not in tests)
 if (typeof module === 'undefined') {
-  observer.observe(document.body, { childList: true, subtree: true });
+  observer.observe(document.body, {childList: true, subtree: true});
   main();
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { extractReceiptNumbers, waitForContent, RECEIPT_REGEX };
+  module.exports = {extractReceiptNumbers, waitForContent, RECEIPT_REGEX};
 }

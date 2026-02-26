@@ -20,14 +20,16 @@ jobs:
         run: |
           python3 -c "import json; json.load(open('manifest.json'))"
           echo "manifest.json is valid JSON"
-      - name: Check JavaScript syntax
-        run: |
-          node --check content.js
-          node --check background.js
-          node --check popup.js
-          echo "All JavaScript files have valid syntax"
-      - name: Run unit tests
-        run: npm test
+      - name: Lint
+        run: npm run lint
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
       - name: Verify referenced files exist
         run: |
           for file in \

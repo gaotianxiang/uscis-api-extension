@@ -20,7 +20,7 @@ function getChangedPaths(oldObj, newObj, prefix) {
   for (const key of allKeys) {
     const path = prefix ? `${prefix}.${key}` : key;
     const subChanged = getChangedPaths(oldObj[key], newObj[key], path);
-    subChanged.forEach(p => changed.add(p));
+    subChanged.forEach((p) => changed.add(p));
     if (subChanged.size > 0) changed.add(path);
   }
 
@@ -30,7 +30,7 @@ function getChangedPaths(oldObj, newObj, prefix) {
 function computeAllChanges(previousResults, newResults) {
   const caseChanges = {};
   for (const result of newResults) {
-    const prev = previousResults.find(r => r.receiptNumber === result.receiptNumber);
+    const prev = previousResults.find((r) => r.receiptNumber === result.receiptNumber);
     if (prev && !result.error && !prev.error && prev.data && result.data) {
       const changed = getChangedPaths(prev.data, result.data);
       if (changed.size > 0) {
@@ -48,7 +48,7 @@ async function fetchCaseData(receiptNumber) {
       credentials: 'include',
       headers: {
         'Accept': 'application/json',
-      }
+      },
     });
 
     if (!response.ok) {
@@ -57,7 +57,7 @@ async function fetchCaseData(receiptNumber) {
         error: true,
         status: response.status,
         statusText: response.statusText,
-        data: null
+        data: null,
       };
     }
 
@@ -66,7 +66,7 @@ async function fetchCaseData(receiptNumber) {
       receiptNumber,
       error: false,
       status: response.status,
-      data
+      data,
     };
   } catch (err) {
     return {
@@ -74,7 +74,7 @@ async function fetchCaseData(receiptNumber) {
       error: true,
       status: 0,
       statusText: err.message,
-      data: null
+      data: null,
     };
   }
 }
@@ -86,7 +86,7 @@ async function fetchAllCases(receiptNumbers) {
   for (let i = 0; i < receiptNumbers.length; i += CONCURRENCY) {
     const batch = receiptNumbers.slice(i, i + CONCURRENCY);
     const batchResults = await Promise.all(
-      batch.map(rn => fetchCaseData(rn))
+        batch.map((rn) => fetchCaseData(rn)),
     );
     results.push(...batchResults);
   }
@@ -96,7 +96,7 @@ async function fetchAllCases(receiptNumbers) {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'RECEIPT_NUMBERS_FOUND') {
-    const { receiptNumbers } = message;
+    const {receiptNumbers} = message;
 
     fetchAllCases(receiptNumbers).then((results) => {
       chrome.storage.local.get(['caseResults'], (stored) => {
@@ -106,19 +106,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           caseResults: results,
           lastUpdated: Date.now(),
           receiptNumbers,
-          caseChanges
+          caseChanges,
         });
-        chrome.action.setBadgeText({ text: String(results.length) });
-        chrome.action.setBadgeBackgroundColor({ color: '#4CAF50' });
+        chrome.action.setBadgeText({text: String(results.length)});
+        chrome.action.setBadgeBackgroundColor({color: '#4CAF50'});
       });
     });
 
-    sendResponse({ received: true });
+    sendResponse({received: true});
     return true;
   }
 
   if (message.type === 'FETCH_CASES') {
-    const { receiptNumbers } = message;
+    const {receiptNumbers} = message;
     fetchAllCases(receiptNumbers).then((results) => {
       chrome.storage.local.get(['caseResults'], (stored) => {
         const previousResults = stored.caseResults || [];
@@ -127,9 +127,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           caseResults: results,
           lastUpdated: Date.now(),
           receiptNumbers,
-          caseChanges
+          caseChanges,
         });
-        sendResponse({ results });
+        sendResponse({results});
       });
     });
     return true;
@@ -144,5 +144,5 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 if (typeof module !== 'undefined') {
-  module.exports = { fetchCaseData, fetchAllCases, getChangedPaths, computeAllChanges };
+  module.exports = {fetchCaseData, fetchAllCases, getChangedPaths, computeAllChanges};
 }
