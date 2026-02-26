@@ -1,0 +1,47 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Validate manifest.json
+        run: |
+          python3 -c "import json; json.load(open('manifest.json'))"
+          echo "manifest.json is valid JSON"
+      - name: Check JavaScript syntax
+        run: |
+          node --check content.js
+          node --check background.js
+          node --check popup.js
+          echo "All JavaScript files have valid syntax"
+      - name: Run unit tests
+        run: npm test
+      - name: Verify referenced files exist
+        run: |
+          for file in \
+            icons/icon16.png \
+            icons/icon48.png \
+            icons/icon128.png \
+            content.js \
+            background.js \
+            popup.html \
+            popup.js \
+            styles.css; do
+            if [ ! -f "$file" ]; then
+              echo "Missing referenced file: $file"
+              exit 1
+            fi
+          done
+          echo "All referenced files exist"
