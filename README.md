@@ -1,6 +1,9 @@
 # USCIS Case API Viewer
 
 [![CI](https://github.com/gaotianxiang/uscis-api-extension/actions/workflows/ci.yml/badge.svg)](https://github.com/gaotianxiang/uscis-api-extension/actions/workflows/ci.yml)
+[![Coverage](https://codecov.io/gh/gaotianxiang/uscis-api-extension/branch/main/graph/badge.svg)](https://codecov.io/gh/gaotianxiang/uscis-api-extension)
+[![GitHub release](https://img.shields.io/github/v/release/gaotianxiang/uscis-api-extension)](https://github.com/gaotianxiang/uscis-api-extension/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A Chrome extension that automatically finds your USCIS case receipt numbers and fetches their API responses in a beautified view.
 

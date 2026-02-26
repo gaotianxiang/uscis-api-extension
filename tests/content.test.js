@@ -2,7 +2,7 @@
 // call does not spin up real timers.
 jest.useFakeTimers();
 
-const { extractReceiptNumbers, waitForContent, RECEIPT_REGEX } = require('../content');
+const {extractReceiptNumbers, waitForContent, RECEIPT_REGEX} = require('../content');
 
 describe('RECEIPT_REGEX', () => {
   test('matches all valid prefixes', () => {
@@ -18,7 +18,7 @@ describe('RECEIPT_REGEX', () => {
   });
 
   test('requires exactly 10 digits', () => {
-    expect('IOE123456789'.match(RECEIPT_REGEX)).toBeNull();   // 9 digits
+    expect('IOE123456789'.match(RECEIPT_REGEX)).toBeNull(); // 9 digits
     expect('IOE1234567890'.match(RECEIPT_REGEX)).not.toBeNull(); // 10 digits
     // 11-digit string: word boundary prevents a match of IOE + first 10 chars
     expect('IOE12345678901'.match(RECEIPT_REGEX)).toBeNull();

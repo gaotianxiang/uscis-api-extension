@@ -24,19 +24,19 @@ function setupPopupDom() {
 // ---------------------------------------------------------------------------
 describe('extractStatusSummary', () => {
   test('returns caseStatus when present', () => {
-    expect(extractStatusSummary({ caseStatus: 'Approved' })).toBe('Approved');
+    expect(extractStatusSummary({caseStatus: 'Approved'})).toBe('Approved');
   });
 
   test('returns currentStatus when caseStatus is absent', () => {
-    expect(extractStatusSummary({ currentStatus: 'Pending' })).toBe('Pending');
+    expect(extractStatusSummary({currentStatus: 'Pending'})).toBe('Pending');
   });
 
   test('returns status when higher-priority fields are absent', () => {
-    expect(extractStatusSummary({ status: 'Active' })).toBe('Active');
+    expect(extractStatusSummary({status: 'Active'})).toBe('Active');
   });
 
   test('returns formType as last-resort field', () => {
-    expect(extractStatusSummary({ formType: 'I-485' })).toBe('I-485');
+    expect(extractStatusSummary({formType: 'I-485'})).toBe('I-485');
   });
 
   test('returns "View Details" when no recognised field is present', () => {
@@ -53,22 +53,22 @@ describe('extractStatusSummary', () => {
 
   test('caseStatus takes priority over all other fields', () => {
     expect(
-      extractStatusSummary({
-        caseStatus: 'Approved',
-        currentStatus: 'Pending',
-        status: 'Active',
-        formType: 'I-485',
-      })
+        extractStatusSummary({
+          caseStatus: 'Approved',
+          currentStatus: 'Pending',
+          status: 'Active',
+          formType: 'I-485',
+        }),
     ).toBe('Approved');
   });
 
   test('currentStatus takes priority over status and formType', () => {
     expect(
-      extractStatusSummary({
-        currentStatus: 'Pending',
-        status: 'Active',
-        formType: 'I-485',
-      })
+        extractStatusSummary({
+          currentStatus: 'Pending',
+          status: 'Active',
+          formType: 'I-485',
+        }),
     ).toBe('Pending');
   });
 });
@@ -169,9 +169,9 @@ describe('renderJsonTree', () => {
   });
 
   test('renders object keys with quoted notation', () => {
-    renderJsonTree(container, { name: 'Alice', age: 30 });
+    renderJsonTree(container, {name: 'Alice', age: 30});
     const keys = Array.from(container.querySelectorAll('.json-key')).map(
-      (k) => k.textContent
+        (k) => k.textContent,
     );
     expect(keys).toContain('"name"');
     expect(keys).toContain('"age"');
@@ -185,14 +185,14 @@ describe('renderJsonTree', () => {
   });
 
   test('renders nested objects recursively', () => {
-    renderJsonTree(container, { outer: { inner: 'value' } });
+    renderJsonTree(container, {outer: {inner: 'value'}});
     const strings = container.querySelectorAll('.json-string');
     expect(strings.length).toBe(1);
     expect(strings[0].textContent).toBe('"value"');
   });
 
   test('renders mixed-type object', () => {
-    renderJsonTree(container, { str: 'hi', num: 1, flag: true, nothing: null });
+    renderJsonTree(container, {str: 'hi', num: 1, flag: true, nothing: null});
     expect(container.querySelector('.json-string')).not.toBeNull();
     expect(container.querySelector('.json-number')).not.toBeNull();
     expect(container.querySelector('.json-boolean')).not.toBeNull();
@@ -209,7 +209,7 @@ describe('createCaseCard', () => {
       receiptNumber: 'IOE1234567890',
       error: false,
       status: 200,
-      data: { caseStatus: 'Case Was Approved' },
+      data: {caseStatus: 'Case Was Approved'},
       ...overrides,
     };
   }
@@ -243,18 +243,18 @@ describe('createCaseCard', () => {
   });
 
   test('badge shows case status for successful results', () => {
-    const card = createCaseCard(makeSuccess({ data: { caseStatus: 'Approved' } }));
+    const card = createCaseCard(makeSuccess({data: {caseStatus: 'Approved'}}));
     expect(card.querySelector('.case-status-badge').textContent).toContain('Approved');
   });
 
   test('badge shows error code for error results', () => {
-    const card = createCaseCard(makeError({ status: 503 }));
+    const card = createCaseCard(makeError({status: 503}));
     expect(card.querySelector('.case-status-badge').textContent).toContain('503');
   });
 
   test('error message shows statusText', () => {
     const card = createCaseCard(
-      makeError({ statusText: 'Internal Server Error', status: 500 })
+        makeError({statusText: 'Internal Server Error', status: 500}),
     );
     const msg = card.querySelector('.error-message');
     expect(msg).not.toBeNull();
@@ -262,7 +262,7 @@ describe('createCaseCard', () => {
   });
 
   test('shows "Unknown error" when statusText is absent', () => {
-    const card = createCaseCard(makeError({ statusText: undefined }));
+    const card = createCaseCard(makeError({statusText: undefined}));
     const msg = card.querySelector('.error-message');
     expect(msg.textContent).toContain('Unknown error');
   });
@@ -309,7 +309,7 @@ describe('createCaseCard', () => {
     document.body.appendChild(card); // needs to be in DOM for click propagation
 
     const rawToggle = Array.from(card.querySelectorAll('.btn-small')).find(
-      (b) => b.textContent === 'Show Raw JSON'
+        (b) => b.textContent === 'Show Raw JSON',
     );
     const rawEl = card.querySelector('.raw-json');
 
@@ -325,8 +325,8 @@ describe('createCaseCard', () => {
   });
 
   test('raw JSON pre element contains serialised JSON', () => {
-    const data = { caseStatus: 'Approved', id: 42 };
-    const card = createCaseCard(makeSuccess({ data }));
+    const data = {caseStatus: 'Approved', id: 42};
+    const card = createCaseCard(makeSuccess({data}));
     const rawEl = card.querySelector('.raw-json');
     expect(rawEl.textContent).toBe(JSON.stringify(data, null, 2));
   });
@@ -340,8 +340,8 @@ describe('renderCases', () => {
 
   test('renders one card per case result', () => {
     const cases = [
-      { receiptNumber: 'IOE1111111111', error: false, status: 200, data: {} },
-      { receiptNumber: 'EAC2222222222', error: false, status: 200, data: {} },
+      {receiptNumber: 'IOE1111111111', error: false, status: 200, data: {}},
+      {receiptNumber: 'EAC2222222222', error: false, status: 200, data: {}},
     ];
     renderCases(cases);
     const container = document.getElementById('cases-container');
@@ -350,12 +350,12 @@ describe('renderCases', () => {
 
   test('clears previous cards before rendering', () => {
     const singleCase = [
-      { receiptNumber: 'IOE1111111111', error: false, status: 200, data: {} },
+      {receiptNumber: 'IOE1111111111', error: false, status: 200, data: {}},
     ];
     renderCases(singleCase);
     renderCases(singleCase);
     expect(
-      document.getElementById('cases-container').querySelectorAll('.case-card')
+        document.getElementById('cases-container').querySelectorAll('.case-card'),
     ).toHaveLength(1);
   });
 });
@@ -381,8 +381,8 @@ describe('toggleAll', () => {
   });
 
   test('expand=false adds collapsed class to all bodies', () => {
-    toggleAll(true);   // first expand
-    toggleAll(false);  // then collapse
+    toggleAll(true); // first expand
+    toggleAll(false); // then collapse
     document.querySelectorAll('.case-body').forEach((body) => {
       expect(body.classList.contains('collapsed')).toBe(true);
     });
@@ -433,14 +433,14 @@ describe('showEmptyState', () => {
     document.getElementById('cases-container').classList.remove('hidden');
     showEmptyState();
     expect(
-      document.getElementById('cases-container').classList.contains('hidden')
+        document.getElementById('cases-container').classList.contains('hidden'),
     ).toBe(true);
   });
 
   test('shows the empty-state element', () => {
     showEmptyState();
     expect(
-      document.getElementById('empty-state').classList.contains('hidden')
+        document.getElementById('empty-state').classList.contains('hidden'),
     ).toBe(false);
   });
 
@@ -459,7 +459,7 @@ describe('createCaseCard change indicators', () => {
       receiptNumber: 'IOE1234567890',
       error: false,
       status: 200,
-      data: { caseStatus: 'Case Was Approved' },
+      data: {caseStatus: 'Case Was Approved'},
       ...overrides,
     };
   }
@@ -489,20 +489,20 @@ describe('createCaseCard change indicators', () => {
   });
 
   test('json-changed class applied to rows with matching paths', () => {
-    const caseResult = makeSuccess({ data: { caseStatus: 'Approved', formType: 'I-485' } });
+    const caseResult = makeSuccess({data: {caseStatus: 'Approved', formType: 'I-485'}});
     const card = createCaseCard(caseResult, ['caseStatus']);
     card.querySelector('.case-body').classList.remove('collapsed');
     const changedItems = card.querySelectorAll('.json-changed');
     expect(changedItems.length).toBeGreaterThan(0);
-    const texts = Array.from(changedItems).map(el => el.textContent);
-    expect(texts.some(t => t.includes('caseStatus'))).toBe(true);
+    const texts = Array.from(changedItems).map((el) => el.textContent);
+    expect(texts.some((t) => t.includes('caseStatus'))).toBe(true);
   });
 
   test('json-changed class not applied to unchanged rows', () => {
-    const caseResult = makeSuccess({ data: { caseStatus: 'Approved', formType: 'I-485' } });
+    const caseResult = makeSuccess({data: {caseStatus: 'Approved', formType: 'I-485'}});
     const card = createCaseCard(caseResult, ['caseStatus']);
     const allItems = card.querySelectorAll('.json-list li');
-    const formTypeItem = Array.from(allItems).find(li => li.textContent.includes('formType'));
+    const formTypeItem = Array.from(allItems).find((li) => li.textContent.includes('formType'));
     expect(formTypeItem).toBeDefined();
     expect(formTypeItem.classList.contains('json-changed')).toBe(false);
   });
@@ -516,9 +516,9 @@ describe('renderCases with caseChanges', () => {
 
   test('passes changedPaths to case cards when caseChanges provided', () => {
     const cases = [
-      { receiptNumber: 'IOE1111111111', error: false, status: 200, data: { caseStatus: 'Approved' } },
+      {receiptNumber: 'IOE1111111111', error: false, status: 200, data: {caseStatus: 'Approved'}},
     ];
-    const caseChanges = { 'IOE1111111111': ['caseStatus'] };
+    const caseChanges = {'IOE1111111111': ['caseStatus']};
     renderCases(cases, caseChanges);
     const card = document.querySelector('.case-card');
     expect(card.classList.contains('changed')).toBe(true);
@@ -527,7 +527,7 @@ describe('renderCases with caseChanges', () => {
 
   test('no change indicators when caseChanges is empty', () => {
     const cases = [
-      { receiptNumber: 'IOE1111111111', error: false, status: 200, data: { caseStatus: 'Approved' } },
+      {receiptNumber: 'IOE1111111111', error: false, status: 200, data: {caseStatus: 'Approved'}},
     ];
     renderCases(cases, {});
     const card = document.querySelector('.case-card');
@@ -536,7 +536,7 @@ describe('renderCases with caseChanges', () => {
 
   test('no change indicators when caseChanges is omitted', () => {
     const cases = [
-      { receiptNumber: 'IOE1111111111', error: false, status: 200, data: { caseStatus: 'Approved' } },
+      {receiptNumber: 'IOE1111111111', error: false, status: 200, data: {caseStatus: 'Approved'}},
     ];
     renderCases(cases);
     const card = document.querySelector('.case-card');
@@ -556,7 +556,7 @@ describe('renderJsonTree change highlighting', () => {
 
   test('adds json-changed class to a changed top-level key row', () => {
     const changedPaths = new Set(['caseStatus']);
-    renderJsonTree(container, { caseStatus: 'Approved', formType: 'I-485' }, 0, changedPaths, '');
+    renderJsonTree(container, {caseStatus: 'Approved', formType: 'I-485'}, 0, changedPaths, '');
     const changedItems = container.querySelectorAll('.json-changed');
     expect(changedItems.length).toBe(1);
     expect(changedItems[0].textContent).toContain('caseStatus');
@@ -564,32 +564,32 @@ describe('renderJsonTree change highlighting', () => {
 
   test('does not add json-changed class to unchanged keys', () => {
     const changedPaths = new Set(['caseStatus']);
-    renderJsonTree(container, { caseStatus: 'Approved', formType: 'I-485' }, 0, changedPaths, '');
+    renderJsonTree(container, {caseStatus: 'Approved', formType: 'I-485'}, 0, changedPaths, '');
     const allItems = container.querySelectorAll('li');
-    const formTypeItem = Array.from(allItems).find(li => li.textContent.includes('formType'));
+    const formTypeItem = Array.from(allItems).find((li) => li.textContent.includes('formType'));
     expect(formTypeItem.classList.contains('json-changed')).toBe(false);
   });
 
   test('adds json-changed to nested changed key rows', () => {
     const changedPaths = new Set(['actions', 'actions.0', 'actions.0.displayText']);
     renderJsonTree(
-      container,
-      { actions: [{ displayText: 'New text' }] },
-      0,
-      changedPaths,
-      ''
+        container,
+        {actions: [{displayText: 'New text'}]},
+        0,
+        changedPaths,
+        '',
     );
     const changedItems = container.querySelectorAll('.json-changed');
     expect(changedItems.length).toBe(3);
   });
 
   test('no changed items when changedPaths is empty', () => {
-    renderJsonTree(container, { caseStatus: 'Approved' }, 0, new Set(), '');
+    renderJsonTree(container, {caseStatus: 'Approved'}, 0, new Set(), '');
     expect(container.querySelectorAll('.json-changed').length).toBe(0);
   });
 
   test('works without changedPaths parameter (backward compatible)', () => {
-    renderJsonTree(container, { caseStatus: 'Approved' });
+    renderJsonTree(container, {caseStatus: 'Approved'});
     expect(container.querySelectorAll('.json-changed').length).toBe(0);
     expect(container.querySelector('.json-string')).not.toBeNull();
   });

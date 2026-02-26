@@ -4,15 +4,22 @@
   "private": true,
   "scripts": {
     "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "lint": "eslint *.js tests/"
   },
   "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-google": "^0.14.0",
     "jest": "^29.0.0",
     "jest-environment-jsdom": "^29.0.0"
   },
   "jest": {
     "testEnvironment": "jsdom",
-    "setupFiles": ["./tests/setup.js"],
-    "testMatch": ["**/tests/**/*.test.js"]
+    "setupFiles": [
+      "./tests/setup.js"
+    ],
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ]
   }
 }

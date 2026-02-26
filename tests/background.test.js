@@ -1,4 +1,4 @@
-const { fetchCaseData, fetchAllCases, getChangedPaths, computeAllChanges } = require('../background');
+const {fetchCaseData, fetchAllCases, getChangedPaths, computeAllChanges} = require('../background');
 
 const API_BASE = 'https://my.uscis.gov/account/case-service/api/cases/';
 
@@ -8,7 +8,7 @@ beforeEach(() => {
 
 describe('fetchCaseData', () => {
   test('returns data on a successful 200 response', async () => {
-    const mockData = { caseStatus: 'Case Was Approved', receiptNumber: 'IOE1234567890' };
+    const mockData = {caseStatus: 'Case Was Approved', receiptNumber: 'IOE1234567890'};
     fetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -35,12 +35,12 @@ describe('fetchCaseData', () => {
     await fetchCaseData('EAC9876543210');
 
     expect(fetch).toHaveBeenCalledWith(
-      `${API_BASE}EAC9876543210`,
-      expect.objectContaining({
-        method: 'GET',
-        credentials: 'include',
-        headers: expect.objectContaining({ Accept: 'application/json' }),
-      })
+        `${API_BASE}EAC9876543210`,
+        expect.objectContaining({
+          method: 'GET',
+          credentials: 'include',
+          headers: expect.objectContaining({Accept: 'application/json'}),
+        }),
     );
   });
 
@@ -91,11 +91,11 @@ describe('fetchCaseData', () => {
   });
 
   test('includes the receipt number in all result shapes', async () => {
-    fetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({}) });
+    fetch.mockResolvedValueOnce({ok: true, status: 200, json: async () => ({})});
     const successResult = await fetchCaseData('WAC1111111111');
     expect(successResult.receiptNumber).toBe('WAC1111111111');
 
-    fetch.mockResolvedValueOnce({ ok: false, status: 500, statusText: 'Server Error' });
+    fetch.mockResolvedValueOnce({ok: false, status: 500, statusText: 'Server Error'});
     const errorResult = await fetchCaseData('LIN2222222222');
     expect(errorResult.receiptNumber).toBe('LIN2222222222');
   });
@@ -126,7 +126,7 @@ describe('fetchAllCases', () => {
     fetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
-      json: async () => ({ caseStatus: 'Approved' }),
+      json: async () => ({caseStatus: 'Approved'}),
     });
 
     const results = await fetchAllCases(['IOE1234567890']);
@@ -175,7 +175,7 @@ describe('fetchAllCases', () => {
       return Promise.resolve({
         ok: true,
         status: 200,
-        json: async () => ({ id: rn }),
+        json: async () => ({id: rn}),
       });
     });
 
@@ -189,9 +189,9 @@ describe('fetchAllCases', () => {
 
   test('handles mixed success and error responses', async () => {
     fetch
-      .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({}) })
-      .mockResolvedValueOnce({ ok: false, status: 401, statusText: 'Unauthorized' })
-      .mockRejectedValueOnce(new Error('Timeout'));
+        .mockResolvedValueOnce({ok: true, status: 200, json: async () => ({})})
+        .mockResolvedValueOnce({ok: false, status: 401, statusText: 'Unauthorized'})
+        .mockRejectedValueOnce(new Error('Timeout'));
 
     const results = await fetchAllCases([
       'IOE1111111111',
@@ -211,7 +211,7 @@ describe('fetchAllCases', () => {
     const callOrder = [];
     fetch.mockImplementation((url) => {
       callOrder.push(url.split('/').pop());
-      return Promise.resolve({ ok: true, status: 200, json: async () => ({}) });
+      return Promise.resolve({ok: true, status: 200, json: async () => ({})});
     });
 
     // 4 items: first batch of 3, second batch of 1
@@ -235,38 +235,38 @@ describe('getChangedPaths', () => {
   });
 
   test('returns empty set for identical objects', () => {
-    expect(getChangedPaths({ a: 1 }, { a: 1 }).size).toBe(0);
+    expect(getChangedPaths({a: 1}, {a: 1}).size).toBe(0);
   });
 
   test('detects a changed top-level string field', () => {
-    const changed = getChangedPaths({ caseStatus: 'Pending' }, { caseStatus: 'Approved' });
+    const changed = getChangedPaths({caseStatus: 'Pending'}, {caseStatus: 'Approved'});
     expect(changed.has('caseStatus')).toBe(true);
   });
 
   test('detects a changed top-level number field', () => {
-    const changed = getChangedPaths({ count: 1 }, { count: 2 });
+    const changed = getChangedPaths({count: 1}, {count: 2});
     expect(changed.has('count')).toBe(true);
   });
 
   test('detects no change when values are equal', () => {
-    const changed = getChangedPaths({ a: 1, b: 'x' }, { a: 1, b: 'x' });
+    const changed = getChangedPaths({a: 1, b: 'x'}, {a: 1, b: 'x'});
     expect(changed.size).toBe(0);
   });
 
   test('detects added fields', () => {
-    const changed = getChangedPaths({ a: 1 }, { a: 1, b: 2 });
+    const changed = getChangedPaths({a: 1}, {a: 1, b: 2});
     expect(changed.has('b')).toBe(true);
   });
 
   test('detects removed fields', () => {
-    const changed = getChangedPaths({ a: 1, b: 2 }, { a: 1 });
+    const changed = getChangedPaths({a: 1, b: 2}, {a: 1});
     expect(changed.has('b')).toBe(true);
   });
 
   test('detects nested field changes and marks parent path too', () => {
     const changed = getChangedPaths(
-      { actions: [{ displayText: 'Old' }] },
-      { actions: [{ displayText: 'New' }] }
+        {actions: [{displayText: 'Old'}]},
+        {actions: [{displayText: 'New'}]},
     );
     expect(changed.has('actions.0.displayText')).toBe(true);
     expect(changed.has('actions.0')).toBe(true);
@@ -275,8 +275,8 @@ describe('getChangedPaths', () => {
 
   test('does not mark unchanged nested fields', () => {
     const changed = getChangedPaths(
-      { a: { x: 1 }, b: 2 },
-      { a: { x: 1 }, b: 3 }
+        {a: {x: 1}, b: 2},
+        {a: {x: 1}, b: 3},
     );
     expect(changed.has('b')).toBe(true);
     expect(changed.has('a')).toBe(false);
@@ -284,22 +284,22 @@ describe('getChangedPaths', () => {
   });
 
   test('handles null vs object change', () => {
-    const changed = getChangedPaths({ a: null }, { a: { x: 1 } });
+    const changed = getChangedPaths({a: null}, {a: {x: 1}});
     expect(changed.has('a')).toBe(true);
   });
 
   test('handles object vs null change', () => {
-    const changed = getChangedPaths({ a: { x: 1 } }, { a: null });
+    const changed = getChangedPaths({a: {x: 1}}, {a: null});
     expect(changed.has('a')).toBe(true);
   });
 
   test('handles undefined vs value change', () => {
-    const changed = getChangedPaths({ a: undefined }, { a: 'hello' });
+    const changed = getChangedPaths({a: undefined}, {a: 'hello'});
     expect(changed.has('a')).toBe(true);
   });
 
   test('handles type change (string to number)', () => {
-    const changed = getChangedPaths({ a: '1' }, { a: 1 });
+    const changed = getChangedPaths({a: '1'}, {a: 1});
     expect(changed.has('a')).toBe(true);
   });
 
@@ -317,24 +317,24 @@ describe('getChangedPaths', () => {
 describe('computeAllChanges', () => {
   test('returns empty object when no previous results exist', () => {
     const newResults = [
-      { receiptNumber: 'IOE1234567890', error: false, data: { caseStatus: 'Pending' } },
+      {receiptNumber: 'IOE1234567890', error: false, data: {caseStatus: 'Pending'}},
     ];
     expect(computeAllChanges([], newResults)).toEqual({});
   });
 
   test('returns empty object when nothing changed', () => {
-    const data = { caseStatus: 'Approved' };
-    const prev = [{ receiptNumber: 'IOE1234567890', error: false, data }];
-    const curr = [{ receiptNumber: 'IOE1234567890', error: false, data }];
+    const data = {caseStatus: 'Approved'};
+    const prev = [{receiptNumber: 'IOE1234567890', error: false, data}];
+    const curr = [{receiptNumber: 'IOE1234567890', error: false, data}];
     expect(computeAllChanges(prev, curr)).toEqual({});
   });
 
   test('returns changed paths for a receipt number that changed', () => {
     const prev = [
-      { receiptNumber: 'IOE1234567890', error: false, data: { caseStatus: 'Pending' } },
+      {receiptNumber: 'IOE1234567890', error: false, data: {caseStatus: 'Pending'}},
     ];
     const curr = [
-      { receiptNumber: 'IOE1234567890', error: false, data: { caseStatus: 'Approved' } },
+      {receiptNumber: 'IOE1234567890', error: false, data: {caseStatus: 'Approved'}},
     ];
     const result = computeAllChanges(prev, curr);
     expect(result['IOE1234567890']).toContain('caseStatus');
@@ -342,31 +342,31 @@ describe('computeAllChanges', () => {
 
   test('skips comparison when new result has error', () => {
     const prev = [
-      { receiptNumber: 'IOE1234567890', error: false, data: { caseStatus: 'Approved' } },
+      {receiptNumber: 'IOE1234567890', error: false, data: {caseStatus: 'Approved'}},
     ];
     const curr = [
-      { receiptNumber: 'IOE1234567890', error: true, status: 500, data: null },
+      {receiptNumber: 'IOE1234567890', error: true, status: 500, data: null},
     ];
     expect(computeAllChanges(prev, curr)).toEqual({});
   });
 
   test('skips comparison when previous result had error', () => {
     const prev = [
-      { receiptNumber: 'IOE1234567890', error: true, status: 500, data: null },
+      {receiptNumber: 'IOE1234567890', error: true, status: 500, data: null},
     ];
     const curr = [
-      { receiptNumber: 'IOE1234567890', error: false, data: { caseStatus: 'Approved' } },
+      {receiptNumber: 'IOE1234567890', error: false, data: {caseStatus: 'Approved'}},
     ];
     expect(computeAllChanges(prev, curr)).toEqual({});
   });
 
   test('skips new receipt numbers with no prior record', () => {
     const prev = [
-      { receiptNumber: 'IOE1111111111', error: false, data: { caseStatus: 'Approved' } },
+      {receiptNumber: 'IOE1111111111', error: false, data: {caseStatus: 'Approved'}},
     ];
     const curr = [
-      { receiptNumber: 'IOE1111111111', error: false, data: { caseStatus: 'Approved' } },
-      { receiptNumber: 'EAC2222222222', error: false, data: { caseStatus: 'Pending' } },
+      {receiptNumber: 'IOE1111111111', error: false, data: {caseStatus: 'Approved'}},
+      {receiptNumber: 'EAC2222222222', error: false, data: {caseStatus: 'Pending'}},
     ];
     const result = computeAllChanges(prev, curr);
     expect(result['EAC2222222222']).toBeUndefined();
@@ -374,12 +374,12 @@ describe('computeAllChanges', () => {
 
   test('handles multiple changed receipt numbers', () => {
     const prev = [
-      { receiptNumber: 'IOE1111111111', error: false, data: { caseStatus: 'Pending' } },
-      { receiptNumber: 'EAC2222222222', error: false, data: { caseStatus: 'Pending' } },
+      {receiptNumber: 'IOE1111111111', error: false, data: {caseStatus: 'Pending'}},
+      {receiptNumber: 'EAC2222222222', error: false, data: {caseStatus: 'Pending'}},
     ];
     const curr = [
-      { receiptNumber: 'IOE1111111111', error: false, data: { caseStatus: 'Approved' } },
-      { receiptNumber: 'EAC2222222222', error: false, data: { caseStatus: 'Denied' } },
+      {receiptNumber: 'IOE1111111111', error: false, data: {caseStatus: 'Approved'}},
+      {receiptNumber: 'EAC2222222222', error: false, data: {caseStatus: 'Denied'}},
     ];
     const result = computeAllChanges(prev, curr);
     expect(result['IOE1111111111']).toContain('caseStatus');

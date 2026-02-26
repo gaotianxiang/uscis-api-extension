@@ -1,0 +1,24 @@
+{
+  "extends": "google",
+  "env": {
+    "browser": true,
+    "es2020": true,
+    "webextensions": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2020
+  },
+  "rules": {
+    "require-jsdoc": "off",
+    "max-len": ["error", {"code": 120}]
+  },
+  "overrides": [
+    {
+      "files": ["tests/**/*.js"],
+      "env": {
+        "jest": true,
+        "node": true
+      }
+    }
+  ]
+}

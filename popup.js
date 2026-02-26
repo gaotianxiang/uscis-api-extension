@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function loadResults() {
   chrome.storage.local.get(['caseResults', 'lastUpdated', 'caseChanges'], (data) => {
-    const { caseResults, lastUpdated, caseChanges } = data;
+    const {caseResults, lastUpdated, caseChanges} = data;
 
     if (!caseResults || caseResults.length === 0) {
       showEmptyState();
@@ -49,9 +49,9 @@ function createCaseCard(caseResult, changedPaths) {
     <span class="receipt-number">${escapeHtml(caseResult.receiptNumber)}</span>
     ${hasChanges ? '<span class="changed-badge">Updated</span>' : ''}
     <span class="case-status-badge">
-      ${caseResult.error
-        ? `Error ${caseResult.status}`
-        : escapeHtml(extractStatusSummary(caseResult.data))}
+      ${caseResult.error ?
+        `Error ${caseResult.status}` :
+        escapeHtml(extractStatusSummary(caseResult.data))}
     </span>
     <button class="toggle-btn" aria-label="Toggle details">&#x25B6;</button>
   `;
@@ -93,7 +93,9 @@ function createCaseCard(caseResult, changedPaths) {
       e.stopPropagation();
       navigator.clipboard.writeText(JSON.stringify(caseResult.data, null, 2));
       copyBtn.textContent = 'Copied!';
-      setTimeout(() => { copyBtn.textContent = 'Copy JSON'; }, 1500);
+      setTimeout(() => {
+        copyBtn.textContent = 'Copy JSON';
+      }, 1500);
     });
     btnRow.appendChild(copyBtn);
 
@@ -117,11 +119,11 @@ function createCaseCard(caseResult, changedPaths) {
 }
 
 function extractStatusSummary(data) {
-  return data?.caseStatus
-    || data?.currentStatus
-    || data?.status
-    || data?.formType
-    || 'View Details';
+  return data?.caseStatus ||
+    data?.currentStatus ||
+    data?.status ||
+    data?.formType ||
+    'View Details';
 }
 
 function renderJsonTree(container, obj, depth, changedPaths, currentPath) {
@@ -215,9 +217,9 @@ function toggleAll(expand) {
 
 function refreshCases() {
   document.getElementById('status').textContent = 'Refreshing...';
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+  chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     if (tabs[0]) {
-      chrome.tabs.sendMessage(tabs[0].id, { type: 'RE_EXTRACT' }, () => {
+      chrome.tabs.sendMessage(tabs[0].id, {type: 'RE_EXTRACT'}, () => {
         if (chrome.runtime.lastError) {
           // Content script not available on this tab
           document.getElementById('status').textContent =
