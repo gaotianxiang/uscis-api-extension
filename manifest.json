@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "USCIS Case API Viewer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Fetches and displays USCIS case API responses for receipt numbers found on the applicant page.",
   "permissions": [
     "activeTab",
